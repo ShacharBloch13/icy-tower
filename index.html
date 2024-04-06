@@ -44,7 +44,8 @@
                 y: canvas.height - (100 * i) - 50,
                 width: 100,
                 height: 10,
-                touched: false
+                touched: false,
+                timer: 0
             });
         }
 
@@ -110,6 +111,8 @@
             }
 
             // Platform collision
+            let standingOnPlatform = false;
+
             platforms.forEach(platform => {
                 if (
                     player.x < platform.x + platform.width &&
@@ -118,14 +121,29 @@
                     player.y + player.height < platform.y + platform.height &&
                     player.velY >= 0
                 ) {
-                if (!platform.touched) {
-                    platform.touched = true; // Mark as touched
-                    score++; // Only increase score for new platforms
-                }
+                    if (!platform.touched) {
+                        platform.touched = true;
+                        score++;
+                    }
                     player.jumping = false;
                     player.velY = 0;
                     player.y = platform.y - player.height;
+                    
+                    standingOnPlatform = true;
+                    platform.timer += 1/60; // Assuming the game runs at 60 FPS
+                    if(platform.timer > 3) { // More than 3 seconds
+                        platform.y += (platform.y / 2)  ;
+                        if(platform.y > canvas.height) { // Reset platform if it falls off-screen
+                            platform.y = 0;
+                            platform.x = Math.random() * (canvas.width - platform.width);
+                            platform.touched = false;
+                            platform.timer = 0; // Reset timer
+                    }
                 }
+                } else {
+                    platform.timer = 0; // Reset timer if the player is not on this platform
+                }
+                
             });
 
             // Clear canvas
