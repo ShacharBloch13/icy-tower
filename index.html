@@ -20,6 +20,24 @@
         const friction = 0.8;
         const baseJump = -10; // Base jump velocity
 
+        // high score
+        let highScores = [];
+
+        function updateHighScores(newScore) {
+            if (highScores.length < 10) {
+                highScores.push(newScore); // Add new score if less than 10 scores are saved
+            } else if (newScore > highScores[highScores.length - 1]) {
+                highScores[highScores.length - 1] = newScore; // Replace the last score if the new score is higher
+            }
+            highScores.sort((a, b) => b - a); // Sort scores in descending order
+
+            // Ensure only top 10 are kept if array exceeds 10 scores due to initial filling
+            if (highScores.length > 10) {
+                highScores = highScores.slice(0, 10);
+            }
+        }
+
+
         // Player
         let player = {
             x: canvas.width / 2,
@@ -130,6 +148,16 @@
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Arial';
                 ctx.fillText('Play Again', canvas.width / 2, canvas.height / 2 + 75);
+                    // Display high scores
+                ctx.fillStyle = 'black';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center'; // Center align for neat listing under "GAME OVER"
+                ctx.fillText('High Scores:', canvas.width / 2, canvas.height / 2 + 120);
+                
+                highScores.forEach((score, index) => {
+                    ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, canvas.height / 2 + 150 + (index * 20));
+                });
+
 
                 // Stop the animation frame calls
                 return;
@@ -190,6 +218,7 @@
             // If player falls off the screen, game over
             if (player.y + player.height >= canvas.height && score > 0) {
                 player.isAlive = false;
+                updateHighScores(score);
             }
 
             // Platform collision
@@ -237,6 +266,7 @@
                         player.y + player.height > enemyY
                     ) {
                         player.isAlive = false;
+                        updateHighScores(score);
                     }
                 }
                 
@@ -296,7 +326,7 @@
             });
 
             //draw score
-            ctx.font = '20px Arial';
+            ctx.font = '16px Arial';
             ctx.fillStyle = 'black';
             ctx.textAlign = 'left';
             ctx.fillText('Score: ' + score, 10, 30);
