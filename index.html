@@ -61,7 +61,8 @@
                 platform.enemy = {
                     type: enemyType,
                     // For Type2 enemies, decide initial moving direction
-                    movingDirection: enemyType === 'Type2' ? (Math.random() < 0.5 ? 'left' : 'right') : null
+                    movingDirection: enemyType === 'Type2' ? (Math.random() < 0.5 ? 'left' : 'right') : null,
+                    positionOffset: 0
                 };
             } else {
                 platform.enemy = null; // No enemy on this platform
@@ -170,6 +171,26 @@
                 } else {
                     platform.timer = 0; // Reset timer if the player is not on this platform
                 }
+
+                // Enemy collision
+                
+                if (platform.enemy !== null && platform.enemy.type === 'Type2') {
+                    const moveSpeed = 1; // How fast the enemy moves side to side
+                    if (platform.enemy.movingDirection === 'left') {
+                        if (platform.enemy.positionOffset > -platform.width / 2 + 10) {
+                            platform.enemy.positionOffset -= moveSpeed;
+                        } else {
+                            platform.enemy.movingDirection = 'right';
+                        }
+                    } else { // movingDirection is 'right'
+                        if (platform.enemy.positionOffset < platform.width / 2 - 10) {
+                            platform.enemy.positionOffset += moveSpeed;
+                        } else {
+                            platform.enemy.movingDirection = 'left';
+                        }
+                    }
+                }
+
                 
             });
 
@@ -192,31 +213,17 @@
                 }
                 // Draw enemies
                 if (platform.enemy !== null) {
-                    if(platform.enemy.type === 'Type2') {
-                        // Move the enemy
-                        if (platform.enemy.movingDirection === 'left') {
-                            platform.x -= 1;
-                            if (platform.x < 0) {
-                                platform.enemy.movingDirection = 'right';
-                            }
-                        } else {
-                            platform.x += 1;
-                            if (platform.x + platform.width > canvas.width) {
-                                platform.enemy.movingDirection = 'left';
-                            }
-                        }
-                    }
                     // Set color based on enemy type
                     ctx.fillStyle = platform.enemy.type === 'Type1' ? 'green' : 'blue';
                     
-                    // Calculate enemy position (centered on platform)
-                    let enemyX = platform.x + (platform.width / 2) - 10; // Center horizontally on the platform
-                    let enemyY = platform.y - 20; // Positioned above the platform
+                    // Adjust enemyX calculation to include positionOffset for Type 2 enemies
+                    let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
+                    let enemyY = platform.y - 20;
                     
                     // Draw the enemy
                     ctx.fillRect(enemyX, enemyY, 20, 20);
-                }
-                
+                                }
+                                
 
             });
 
