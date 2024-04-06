@@ -34,12 +34,14 @@
 
         //score
         let score = 0;
+        
 
         // Platforms
+        let platformLabel = 0;
         let platforms = [];
-        for(let i = 0; i < 10; i++) {
+        for(let i = 0; i < 9; i++) {
             platforms.push({
-                id: i,
+                id: platformLabel++,
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
                 width: 100,
@@ -47,6 +49,8 @@
                 touched: false,
                 timer: 0
             });
+        
+        
         }
 
         // Key Listener
@@ -91,6 +95,7 @@
                         platform.y = 0;
                         platform.x = Math.random() * (canvas.width - platform.width);
                         platform.touched = false;
+                        platform.id = platformLabel++;
                         
                         
                     }
@@ -123,7 +128,7 @@
                 ) {
                     if (!platform.touched) {
                         platform.touched = true;
-                        score++;
+                        score = platform.id + 1;
                     }
                     player.jumping = false;
                     player.velY = 0;
@@ -157,6 +162,14 @@
             platforms.forEach(platform => {
                 ctx.fillStyle = 'black';
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                //add increment labels for each platform
+                if ((platform.id+1) % 10 === 0 && platform.id !== 0) {
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = 'white';
+                    ctx.fillText(platform.id+1, platform.x + 40, platform.y + 10);
+                }
+                
+
             });
 
             //draw score
