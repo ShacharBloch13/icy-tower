@@ -29,7 +29,8 @@
             speed: 5,
             velX: 0,
             velY: 0,
-            jumping: false
+            jumping: false,
+            isAlive: true
         };
 
         //score
@@ -84,6 +85,14 @@
         });
 
         function updateGame() {
+            if (!player.isAlive) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+                ctx.font = '40px Arial';
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center'; // Align text for better positioning
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+                return; // Stop the game loop if the player is not alive
+            }
             // Check key inputs
             if (keys[39]) { // right arrow
                 if (player.velX < player.speed) {
@@ -137,6 +146,10 @@
                 player.jumping = false;
                 player.velY = 0;
             }
+            // If player falls off the screen, game over - not working
+            if (player.y + player.height >= canvas.height && score > 0) {
+                player.isAlive = false;
+            }
 
             // Platform collision
             let standingOnPlatform = false;
@@ -173,6 +186,18 @@
                 }
 
                 // Enemy collision
+                if (platform.enemy !== null) {
+                    let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
+                    let enemyY = platform.y - 20;
+                    if (
+                        player.x < enemyX + 20 &&
+                        player.x + player.width > enemyX &&
+                        player.y < enemyY + 20 &&
+                        player.y + player.height > enemyY
+                    ) {
+                        player.isAlive = false;
+                    }
+                }
                 
                 if (platform.enemy !== null && platform.enemy.type === 'Type2') {
                     const moveSpeed = 1; // How fast the enemy moves side to side
@@ -193,6 +218,8 @@
 
                 
             });
+
+           
 
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
