@@ -15,6 +15,19 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+         // Load images
+        const playerImage = new Image();
+        playerImage.src = 'player.png'; // Path to player image
+
+        const type1EnemyImage = new Image();
+        type1EnemyImage.src = 'type1enemy.png'; // Path to Type 1 enemy image
+
+        const type2EnemyImage = new Image();
+        type2EnemyImage.src = 'type2enemy.png'; // Path to Type 2 enemy image
+
+        const platformImage = new Image();
+        platformImage.src = 'platform.png'; // Path to platform image
+
         // Game settings
         const gravity = 0.5;
         const friction = 0.8;
@@ -108,7 +121,7 @@
 
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
-            if (Math.random() < 0.05) {
+            if (Math.random() < 0.5) {
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
                     type: enemyType,
@@ -296,13 +309,15 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw player
-            ctx.fillStyle = 'red';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            //ctx.fillStyle = 'red';
+            //ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 
             // Draw platforms
             platforms.forEach(platform => {
-                ctx.fillStyle = 'black';
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                //ctx.fillStyle = 'black';
+                //ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
                 //add increment labels for each platform
                 if ((platform.id+1) % 10 === 0 && platform.id !== 0) {
                     ctx.font = '14px Arial';
@@ -312,18 +327,21 @@
                 // Draw enemies
                 if (platform.enemy !== null) {
                     // Set color based on enemy type
-                    ctx.fillStyle = platform.enemy.type === 'Type1' ? 'green' : 'blue';
+                    //ctx.fillStyle = platform.enemy.type === 'Type1' ? 'green' : 'blue';
                     
                     // Adjust enemyX calculation to include positionOffset for Type 2 enemies
                     let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
-                    let enemyY = platform.y - 20;
+                    let enemyY = platform.y - 40;
+                    const enemyImage = platform.enemy.type === 'Type1' ? type1EnemyImage : type2EnemyImage;
                     
                     // Draw the enemy
-                    ctx.fillRect(enemyX, enemyY, 20, 20);
+                    ctx.drawImage(enemyImage, enemyX, enemyY, 40, 40);
                                 }
                                 
 
             });
+
+            
 
             //draw score
             ctx.font = '16px Arial';
