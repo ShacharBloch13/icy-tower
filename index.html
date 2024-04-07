@@ -121,7 +121,7 @@
 
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
-            if (Math.random() < 0.5) {
+            if (Math.random() < 0.05) {
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
                     type: enemyType,
@@ -129,6 +129,10 @@
                     movingDirection: enemyType === 'Type2' ? (Math.random() < 0.5 ? 'left' : 'right') : null,
                     positionOffset: 0
                 };
+
+                if(enemyType === 'Type2') {
+                    platform.width = platform.width * 1.5 // Increase platform width for Type2 enemies
+                }
             } else {
                 platform.enemy = null; // No enemy on this platform
             }
