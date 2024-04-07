@@ -66,13 +66,47 @@
 
         //score
         let score = 0;
+
+        let platforms = [];
         
+        function platformsOverlap(platform1, platform2) {
+            // Check horizontal overlap
+            let horizontalOverlap = platform1.x < platform2.x + platform2.width && platform1.x + platform1.width > platform2.x;
+            // Check vertical overlap (might be useful if platforms can move vertically or spawn at similar heights)
+            let verticalOverlap = platform1.y < platform2.y + platform2.height && platform1.y + platform1.height > platform2.y;
+            return horizontalOverlap && verticalOverlap;
+        }
+
+
+        function adjustPlatformPosition(newPlatform) {
+            let overlap;
+            do {
+                overlap = false;
+                // Check for overlap with each existing platform
+                for (let platform of platforms) {
+                    if (platformsOverlap(newPlatform, platform)) {
+                        overlap = true;
+                        // If overlap, adjust position and break to check again
+                        newPlatform.x += newPlatform.width;
+                        // If the platform goes beyond canvas, reset to the far left
+                        if (newPlatform.x + newPlatform.width > canvas.width) {
+                            newPlatform.x = 0;
+                        }
+                        break; // Check again after adjustment
+                    }
+                }
+            } while (overlap); // Continue until no overlap is found
+        }
+
 
         // Platforms
         let platformLabel = 0;
-        let platforms = [];
-        for(let i = 0; i < 9; i++) {
-            platforms.push({
+        for (let i = 0; i < 9; i++) {
+            let chance = Math.random();
+            let shouldMove = 0.47 < chance < 0.53; // 6% chance to move
+            //let shouldMove = Math.random() < 0.6; // 60% chance to move - debugging
+            
+            let newPlatform = {
                 id: platformLabel++,
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
@@ -80,12 +114,17 @@
                 height: 10,
                 touched: false,
                 timer: 0,
-                enemy: null
-            });
-        
-        
-        }
+                enemy: null,
+                shouldMove: shouldMove,
+                moveDirection: 'up',
+                moveDistance: 0
 
+            };
+            // Adjust platform position to prevent overlaps
+            console.log(chance); // Debugging
+            adjustPlatformPosition(newPlatform);
+            platforms.push(newPlatform);
+        }
         // Function to reset the game when reset is clicked
         function resetGame() {
             player = {
@@ -158,21 +197,21 @@
                 ctx.font = '40px Arial';
                 ctx.fillStyle = 'red';
                 ctx.textAlign = 'center'; // Align text for better positioning
-                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+                ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
                 // Draw 'Play Again' button
                 ctx.fillStyle = 'green';
-                ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 + 50, 100, 40); // Simple rectangle as button
+                ctx.fillRect(canvas.width / 2 - 50, canvas.height / 2 + 20, 100, 40); // Simple rectangle as button
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Arial';
-                ctx.fillText('Play Again', canvas.width / 2, canvas.height / 2 + 75);
+                ctx.fillText('Play Again', canvas.width / 2, canvas.height / 2 + 45);
                     // Display high scores
                 ctx.fillStyle = 'black';
                 ctx.font = '16px Arial';
                 ctx.textAlign = 'center'; // Center align for neat listing under "GAME OVER"
-                ctx.fillText('High Scores:', canvas.width / 2, canvas.height / 2 + 120);
+                ctx.fillText('High Scores:', canvas.width / 2, canvas.height / 2 + 90);
                 
                 highScores.forEach((score, index) => {
-                    ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, canvas.height / 2 + 150 + (index * 20));
+                    ctx.fillText(`${index + 1}. ${score}`, canvas.width / 2, canvas.height / 2 + 120 + (index * 20));
                 });
 
 
@@ -304,8 +343,28 @@
                     }
                 }
 
+                if (platform.shouldMove) {
+                    if (platform.moveDirection === 'up') {
+                        if (platform.moveDistance < 20) {
+                            platform.y -= 1;
+                            platform.moveDistance++;
+                        } else {
+                            platform.moveDirection = 'down';
+                        }
+                    }else if (platform.moveDirection === 'down'){
+                        if (platform.moveDistance > -20){
+                            platform.y += 1;
+                            platform.moveDistance--;
+                        } else {
+                            platform.moveDirection = 'up';
+                        }
+                    }
+                }
+
                 
             });
+
+                
 
            
 
@@ -362,7 +421,7 @@
                 const rect = canvas.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
                 const clickY = e.clientY - rect.top;
-                if (clickX >= canvas.width / 2 - 50 && clickX <= canvas.width / 2 + 50 && clickY >= canvas.height / 2 + 50 && clickY <= canvas.height / 2 + 90) {
+                if (clickX >= canvas.width / 2 - 50 && clickX <= canvas.width / 2 + 50 && clickY >= canvas.height / 2 + 20 && clickY <= canvas.height / 2 + 60) {
                     resetGame();
                 }
             }
