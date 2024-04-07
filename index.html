@@ -102,8 +102,8 @@
         // Platforms
         let platformLabel = 0;
         for (let i = 0; i < 9; i++) {
-            let chance = Math.random();
-            let shouldMove = 0.47 < chance < 0.53; // 6% chance to move
+            // let movingChance = Math.random();
+            // let shouldMove = 0.47 < movingChance  && movingChance < 0.53; // 6% chance to move
             //let shouldMove = Math.random() < 0.6; // 60% chance to move - debugging
             
             let newPlatform = {
@@ -115,15 +115,15 @@
                 touched: false,
                 timer: 0,
                 enemy: null,
-                shouldMove: shouldMove,
-                moveDirection: 'up',
-                moveDistance: 0
+                shouldMove: null,
+                moveDirection: null,
+                moveDistance: null
 
             };
             // Adjust platform position to prevent overlaps
-            console.log(chance); // Debugging
             adjustPlatformPosition(newPlatform);
             platforms.push(newPlatform);
+    
         }
         // Function to reset the game when reset is clicked
         function resetGame() {
@@ -161,6 +161,7 @@
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
             if (Math.random() < 0.05) {
+                console.log('enemy assigned'); // Debugging
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
                     type: enemyType,
@@ -176,6 +177,20 @@
                 platform.enemy = null; // No enemy on this platform
             }
         }
+
+        function assignMovementToPlatform(platform) {
+            let movingChance = Math.random();
+            let shouldMove = movingChance > 0.47 && movingChance < 0.53; // 6% chance to move
+            if (shouldMove) {
+                console.log('platform assigned to move'); // Debugging
+                platform.shouldMove = true;
+                platform.moveDirection = 'up'; // Initial move direction
+                platform.moveDistance = 0; // Reset move distance
+            } else {
+                platform.shouldMove = false; // This platform should not move
+            }
+        }
+
 
 
         // Key Listener
@@ -250,6 +265,9 @@
                         platform.id = platformLabel++;
                         if (!platform.enemy) {
                             assignEnemyToPlatform(platform);
+                        }
+                        if (platform.moveDirection === null) {
+                            assignMovementToPlatform(platform);
                         }
                         
 
