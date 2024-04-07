@@ -45,6 +45,7 @@
             starPowerup.active = true;
             console.log('star activated'); // Debugging
             starPowerup.timer = 8; // 8 seconds
+            console.log('star timer' + starPowerup.timer)
         }
         // high score
         let highScores = [];
@@ -360,7 +361,7 @@
                 }
 
                 // Enemy collision
-                if (platform.enemy !== null && starPowerup.active) {
+                if (platform.enemy !== null) {
                 
                     let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
                     let enemyY = platform.y - 20;
@@ -370,8 +371,13 @@
                         player.y < enemyY + 20 &&
                         player.y + player.height > enemyY
                     ) {
-                        player.isAlive = false;
-                        updateHighScores(score);
+                        if (!starPowerup.active){
+                            player.isAlive = false;
+                            updateHighScores(score);
+
+                        }
+                        
+
                     }
                 }
                 
@@ -407,12 +413,7 @@
                     }
                 }
 
-                if (starPowerup.active) {
-                    starPowerup.timer -= 1/60; // Count down the timer
-                    if (starPowerup.timer <= 0) {
-                        starPowerup.active = false; // Deactivate the powerup
-                    }
-                }
+                
 
                 if (platform.shouldMove) {
                     if (platform.moveDirection === 'up') {
@@ -480,6 +481,12 @@
             
         });
 
+        if (starPowerup.active) {
+                    starPowerup.timer -= 1/60; // Count down the timer
+                    if (starPowerup.timer <= 0) {
+                        starPowerup.active = false; // Deactivate the powerup
+                    }
+                }
             
 
             //draw score
