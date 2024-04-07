@@ -28,6 +28,9 @@
         const platformImage = new Image();
         platformImage.src = 'platform.png'; // Path to platform image
 
+        const starImage = new Image();
+        starImage.src = 'star.png'; // Path to star image
+
         // Game settings
         const gravity = 0.5;
         const friction = 0.8;
@@ -49,7 +52,7 @@
                 highScores = highScores.slice(0, 10);
             }
         }
-
+       
 
         // Player
         let player = {
@@ -115,6 +118,7 @@
                 touched: false,
                 timer: 0,
                 enemy: null,
+                star: null,
                 shouldMove: null,
                 moveDirection: null,
                 moveDistance: null
@@ -156,7 +160,17 @@
             updateGame();
         }
 
-        
+        function assignStarToPlatform(platform) {
+            // 3% chance to add a star to a platform
+            if (Math.random() < 0.3) {
+                console.log('star assigned'); // Debugging
+                platform.star = {
+                    positionOffset: 0
+                };
+            } else {
+                platform.star = null; // No star on this platform
+            }
+        }
 
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
@@ -268,6 +282,9 @@
                         }
                         if (platform.moveDirection === null) {
                             assignMovementToPlatform(platform);
+                        }
+                        if (platform.star === null) {
+                            assignStarToPlatform(platform);
                         }
                         
 
@@ -417,10 +434,15 @@
                     
                     // Draw the enemy
                     ctx.drawImage(enemyImage, enemyX, enemyY, 40, 40);
-                                }
-                                
+                }
+                    // Draw the star             
+                if (platform.star) {
+                    ctx.drawImage(starImage, platform.x + 40, platform.y - 20, 20, 20);
+                
 
-            });
+                }
+            
+        });
 
             
 
