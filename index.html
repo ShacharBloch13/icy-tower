@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platformer Game with Screen Scroll</title>
+    <title>Shachar's Icy Tower</title>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; }
-        #gameCanvas { background-color: #87CEEB; }
+        #gameCanvas { background-color: #87CEEB;}
     </style>
 </head>
 <body>
@@ -31,6 +31,9 @@
         const starImage = new Image();
         starImage.src = 'star.png'; // Path to star image
 
+        const extraPointsImage = new Image();
+        extraPointsImage.src = 'ExtraPoints.png'; // Path to extra points image
+
         // Game settings
         const gravity = 0.5;
         const friction = 0.8;
@@ -43,9 +46,9 @@
 
         function starActivated() {
             starPowerup.active = true;
-            console.log('star activated'); // Debugging
+            //console.log('star activated'); // Debugging
             starPowerup.timer = 8; // 8 seconds
-            console.log('star timer' + starPowerup.timer)
+            //console.log('star timer' + starPowerup.timer)
         }
         // high score
         let highScores = [];
@@ -93,24 +96,37 @@
 
 
         function adjustPlatformPosition(newPlatform) {
-            let overlap;
-            do {
-                overlap = false;
-                // Check for overlap with each existing platform
+            const maxAttempts = 100; // Maximum number of attempts to find a non-overlapping position
+            let attempts = 0;
+            
+            while (attempts < maxAttempts) {
+                let overlap = false;
                 for (let platform of platforms) {
                     if (platformsOverlap(newPlatform, platform)) {
                         overlap = true;
-                        // If overlap, adjust position and break to check again
-                        newPlatform.x += newPlatform.width;
-                        // If the platform goes beyond canvas, reset to the far left
-                        if (newPlatform.x + newPlatform.width > canvas.width) {
-                            newPlatform.x = 0;
-                        }
-                        break; // Check again after adjustment
+                        break; // Exit the loop as soon as an overlap is found
                     }
                 }
-            } while (overlap); // Continue until no overlap is found
+                
+                if (!overlap) {
+                    break; // If there's no overlap, the current position is good
+                }
+                
+                // Adjust the platform's position. We choose a new random position for both x and y.
+                // Ensure the new position is within the bounds of the canvas and does not cause the platform
+                // to go off-screen. Consider adjusting these values based on your game's design.
+                newPlatform.x = Math.random() * (canvas.width - newPlatform.width);
+                newPlatform.y = Math.random() * (canvas.height - newPlatform.height - 50) + 50; // Assuming a minimum of 50px from the bottom
+                console.log('Platform adjusted'); //debugging
+                attempts++;
+            }
+            
+            if (attempts === maxAttempts) {
+                console.log("Failed to place a platform without overlap after maximum attempts");
+                // Handle this scenario, maybe by not adding the platform or placing it in a default location
+            }
         }
+
 
 
         // Platforms
@@ -132,7 +148,8 @@
                 star: null,
                 shouldMove: null,
                 moveDirection: null,
-                moveDistance: null
+                moveDistance: null,
+                extraPoints: null
 
             };
             // Adjust platform position to prevent overlaps
@@ -169,16 +186,28 @@
                     star: null,
                     shouldMove: null,
                     moveDirection: null,
-                    moveDistance: null
+                    moveDistance: null,
+                    extraPoints: null
                 });
             }
             updateGame();
         }
+        function assignExtraPointsToPlatform(platform) {
+            // 3% chance to add extra points to a platform
+            if (Math.random() < 0.03) {
+                //console.log('extra points assigned'); // Debugging
+                platform.extraPoints = {
+                    positionOffset: 0
+                };
+            } else {
+                platform.extraPoints = null; // No extra points on this platform
+            }
+        }
 
         function assignStarToPlatform(platform) {
             // 3% chance to add a star to a platform
-            if (Math.random() < 0.3) {
-                console.log('star assigned'); // Debugging
+            if (Math.random() < 0.05) { 
+                //console.log('star assigned'); // Debugging
                 platform.star = {
                     positionOffset: 0
                 };
@@ -190,7 +219,7 @@
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
             if (Math.random() < 0.05) {
-                console.log('enemy assigned'); // Debugging
+                //console.log('enemy assigned'); // Debugging
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
                     type: enemyType,
@@ -211,7 +240,7 @@
             let movingChance = Math.random();
             let shouldMove = movingChance > 0.47 && movingChance < 0.53; // 6% chance to move
             if (shouldMove) {
-                console.log('platform assigned to move'); // Debugging
+                //console.log('platform assigned to move'); // Debugging
                 platform.shouldMove = true;
                 platform.moveDirection = 'up'; // Initial move direction
                 platform.moveDistance = 0; // Reset move distance
@@ -219,6 +248,7 @@
                 platform.shouldMove = false; // This platform should not move
             }
         }
+
 
 
 
@@ -300,7 +330,9 @@
                         if (platform.star === null) {
                             assignStarToPlatform(platform);
                         }
-                        
+                        if (platform.extraPoints === null) {
+                            assignExtraPointsToPlatform(platform);
+                        }
 
                         
                         
@@ -339,7 +371,12 @@
                 ) {
                     if (!platform.touched) {
                         platform.touched = true;
-                        score = platform.id + 1;
+                        if (score > platform.id + 1){
+                            score = score + 1;
+                        }
+                        else{
+                            score = platform.id + 1;
+                        }
                     }
                     player.jumping = false;
                     player.velY = 0;
@@ -413,6 +450,21 @@
                     }
                 }
 
+                // Extra points collision
+                if (platform.extraPoints !== null) {
+                    let extraPointsX = platform.x + 40 + platform.extraPoints.positionOffset;  
+                    let extraPointsY = platform.y - 20;
+                    if (
+                        player.x < extraPointsX + 20 &&
+                        player.x + player.width > extraPointsX &&
+                        player.y < extraPointsY + 20 &&
+                        player.y + player.height > extraPointsY
+                    ) {
+                        platform.extraPoints = null; // Remove the extra points from the platform
+                        score += 10; // Add 10 points to the score
+                    }
+                }
+
                 
 
                 if (platform.shouldMove) {
@@ -461,9 +513,7 @@
                 }
                 // Draw enemies
                 if (platform.enemy !== null) {
-                    // Set color based on enemy type
-                    //ctx.fillStyle = platform.enemy.type === 'Type1' ? 'green' : 'blue';
-                    
+                   
                     // Adjust enemyX calculation to include positionOffset for Type 2 enemies
                     let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
                     let enemyY = platform.y - 40;
@@ -475,8 +525,10 @@
                     // Draw the star             
                 if (platform.star) {
                     ctx.drawImage(starImage, platform.x + 40, platform.y - 20, 20, 20);
-                
-
+                }
+                // Draw the extra points
+                if (platform.extraPoints) {
+                    ctx.drawImage(extraPointsImage, platform.x + 40, platform.y - 20, 20, 20);
                 }
             
         });
