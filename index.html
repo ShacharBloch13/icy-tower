@@ -35,7 +35,17 @@
         const gravity = 0.5;
         const friction = 0.8;
         const baseJump = -10; // Base jump velocity
+        //star activated
+        let starPowerup ={
+            active: false,
+            timer: 0
+        };
 
+        function starActivated() {
+            starPowerup.active = true;
+            console.log('star activated'); // Debugging
+            starPowerup.timer = 8; // 8 seconds
+        }
         // high score
         let highScores = [];
 
@@ -154,7 +164,11 @@
                     height: 10,
                     touched: false,
                     timer: 0,
-                    enemy: null
+                    enemy: null,
+                    star: null,
+                    shouldMove: null,
+                    moveDirection: null,
+                    moveDistance: null
                 });
             }
             updateGame();
@@ -270,7 +284,6 @@
             if (player.y < canvas.height / 4) {
                 player.y += Math.abs(player.velY);
                 platforms.forEach(platform => {
-                    //assignEnemyToPlatform(platform);
                     platform.y += Math.abs(player.velY);
                     if (platform.y > canvas.height) {
                         platform.y = 0;
@@ -347,7 +360,8 @@
                 }
 
                 // Enemy collision
-                if (platform.enemy !== null) {
+                if (platform.enemy !== null && starPowerup.active) {
+                
                     let enemyX = platform.x + (platform.width / 2) - 10 + (platform.enemy.type === 'Type2' ? platform.enemy.positionOffset : 0);
                     let enemyY = platform.y - 20;
                     if (
@@ -375,6 +389,28 @@
                         } else {
                             platform.enemy.movingDirection = 'left';
                         }
+                    }
+                }
+
+                // Star collision
+                if (platform.star !== null) {
+                    let starX = platform.x + 40 + platform.star.positionOffset;
+                    let starY = platform.y - 20;
+                    if (
+                        player.x < starX + 20 &&
+                        player.x + player.width > starX &&
+                        player.y < starY + 20 &&
+                        player.y + player.height > starY
+                    ) {
+                        platform.star = null; // Remove the star from the platform
+                        starActivated()// 8 seconds to touch monsters without dying
+                    }
+                }
+
+                if (starPowerup.active) {
+                    starPowerup.timer -= 1/60; // Count down the timer
+                    if (starPowerup.timer <= 0) {
+                        starPowerup.active = false; // Deactivate the powerup
                     }
                 }
 
