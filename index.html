@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shachar's Icy Tower</title>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; }
+        body, html { margin: 0; padding: 0; overflow: hidden; height: 100%; display: flex; justify-content: center; align-items: center;}
         #gameCanvas { background-color: #87CEEB;}
     </style>
 </head>
@@ -43,6 +43,32 @@
             active: false,
             timer: 0
         };
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256); // Random between 0-255
+            const g = Math.floor(Math.random() * 256); // Random between 0-255
+            const b = Math.floor(Math.random() * 256); // Random between 0-255
+            return `rgb(${r},${g},${b})`; // Construct an RGB color string
+        }
+        let lastHundred = 0;
+
+        // Function to change the background color based on the score
+        function selectBackgroundColor(score) {
+            // Calculate the current hundred based on the score
+            const currentHundred = Math.floor(score / 100);
+
+            // You can store the last hundred in a variable outside of this function
+            // If the hundred has changed, update the background color
+            if (lastHundred !== currentHundred) {
+                lastHundred = currentHundred; // Update the last hundred to the current one
+                const newColor = getRandomColor(); // Get a random color
+                canvas.style.backgroundColor = newColor; // Change the background color of the canvas
+            }
+        }
+
+
+ 
+
+        
 
         function starActivated() {
             starPowerup.active = true;
@@ -168,7 +194,8 @@
                 velX: 0,
                 velY: 0,
                 jumping: false,
-                isAlive: true
+                isAlive: true,
+                backgroundColor: '#87CEEB'
             };
             score = 0;
             platformLabel = 0;
@@ -205,7 +232,7 @@
         }
 
         function assignStarToPlatform(platform) {
-            // 3% chance to add a star to a platform
+            // 5% chance to add a star to a platform
             if (Math.random() < 0.05) { 
                 //console.log('star assigned'); // Debugging
                 platform.star = {
@@ -218,7 +245,7 @@
 
         function assignEnemyToPlatform(platform) {
             // 5% chance to add an enemy to a platform
-            if (Math.random() < 0.05) {
+            if (Math.random() < 0.05 +0.0005*score) { // Increase the chance of enemy as the score increases- when score is 100, the chance is 10%
                 //console.log('enemy assigned'); // Debugging
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
@@ -373,9 +400,11 @@
                         platform.touched = true;
                         if (score > platform.id + 1){
                             score = score + 1;
+                            selectBackgroundColor(score);
                         }
                         else{
                             score = platform.id + 1;
+                            selectBackgroundColor(score);
                         }
                     }
                     player.jumping = false;
@@ -462,6 +491,7 @@
                     ) {
                         platform.extraPoints = null; // Remove the extra points from the platform
                         score += 10; // Add 10 points to the score
+                        selectBackgroundColor(score);
                     }
                 }
 
