@@ -76,6 +76,14 @@
             starPowerup.timer = 8; // 8 seconds
             //console.log('star timer' + starPowerup.timer)
         }
+
+        function formatTime(seconds) {
+            seconds = Math.round(seconds); // Round to the nearest whole number to avoid decimal places
+            let minutes = Math.floor(seconds / 60);
+            let remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
         // high score
         let highScores = [];
 
@@ -175,7 +183,8 @@
                 shouldMove: null,
                 moveDirection: null,
                 moveDistance: null,
-                extraPoints: null
+                extraPoints: null,
+                enemyProbability: 0.05
 
             };
             // Adjust platform position to prevent overlaps
@@ -214,7 +223,8 @@
                     shouldMove: null,
                     moveDirection: null,
                     moveDistance: null,
-                    extraPoints: null
+                    extraPoints: null,
+                    enemyProbability: 0.05
                 });
             }
             updateGame();
@@ -244,8 +254,8 @@
         }
 
         function assignEnemyToPlatform(platform) {
-            // 5% chance to add an enemy to a platform
-            if (Math.random() < 0.05 +0.0005*score) { // Increase the chance of enemy as the score increases- when score is 100, the chance is 10%
+            // Begin w 5% chance to add an enemy to a platform, increase the chance of enemy as the score increases- when score is 100, the chance is 10%
+            if (Math.random() < platform.enemyProbability +0.0005*score) { 
                 //console.log('enemy assigned'); // Debugging
                 const enemyType = Math.random() < 0.5 ? 'Type1' : 'Type2';
                 platform.enemy = {
@@ -567,6 +577,13 @@
                     starPowerup.timer -= 1/60; // Count down the timer
                     if (starPowerup.timer <= 0) {
                         starPowerup.active = false; // Deactivate the powerup
+                    }
+                    else{
+                        ctx.font = '16px Arial';
+                        ctx.fillStyle = 'red';
+                        ctx.textAlign = 'right';
+                        let timerText = formatTime(starPowerup.timer);
+                        ctx.fillText('Star Powerup: ' + timerText, canvas.width - 10 , 30);
                     }
                 }
             
